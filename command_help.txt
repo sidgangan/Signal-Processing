@@ -1,0 +1,11 @@
+//compile main
+g++ -c -o main.o main.cpp
+
+//compile dsp
+g++ -c -o dsp.o source/dsp.cpp
+
+//compile utils
+g++ -c -o utils.o source/utils.cpp
+
+//link all and create executable "main"
+g++ -o main hello.o dsp.o utils.o
