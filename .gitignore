@@ -1,0 +1,4 @@
+*.o
+main
+command_help.txt
+.vscode/
