@@ -1,4 +1,3 @@
-Create Windowed FFT function
 Create IFFT wth window, sumsquare and taking 4 spectrum as input
 Create function for normalizing the Matrix
 Converting model to tflite

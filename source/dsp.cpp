@@ -4,8 +4,7 @@
 using namespace std;
 
 
-template<class T>
-void hamming(T* a, int size){
+void hamming(double* a, int size){
 	double factor = 2*PI/(size);
 	
 	for(int i=0;i<size;i++){
@@ -41,12 +40,7 @@ void window_sumsquare(double window_sum[], int n, int n_frames, double win[], in
     }
 }
 
-void RFFT(double* audio, int audio_size, cd* spectrum){
-    cd temp_spect[audio_size];
-    
-    for(int i=0; i<audio_size;i++){
-        temp_spect[i] = audio[i];
-    }
+void RFFT(cd* temp_spect, int audio_size, cd* spectrum){
 
     fft_util(temp_spect,audio_size,false);
 
@@ -79,4 +73,15 @@ void IRFFT(cd* spectrum, int spect_size, double* audio){
     for(int i=0; i<audio_size;i++){
         audio[i] = real(temp_audio[i]);
     }
+}
+
+void stft(double* audio, int audio_size, cd* spectrum, double* hamming_window){
+
+    cd temp_spect[audio_size];
+    for(int i=0;i<audio_size;i++){
+        temp_spect[i] = audio[i]*hamming_window[i];
+    }
+
+    RFFT(temp_spect, audio_size, spectrum);
+
 }

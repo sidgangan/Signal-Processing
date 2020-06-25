@@ -8,4 +8,4 @@ g++ -c -o dsp.o source/dsp.cpp
 g++ -c -o utils.o source/utils.cpp
 
 //link all and create executable "main"
-g++ -o main hello.o dsp.o utils.o
+g++ -o main main.o dsp.o utils.o

@@ -32,8 +32,8 @@ int main(){
 	
 	
     int audio_size = 16;
-    int n_fft = 256;
-    int hop = 64;
+    int n_fft = 16;
+    int hop = 2;
     int n_frames = 4;
     int size = n_fft + hop*(n_frames - 1);
     int spectrum_size = audio_size/2 +1;
@@ -48,7 +48,7 @@ int main(){
     double* win = (double*)calloc(n_fft,__SIZEOF_DOUBLE__); // array for hamming window
     double* x = (double* )calloc(size, __SIZEOF_DOUBLE__);  // array for sumsquare
 
-    // hamming(win,n_fft);
+    hamming(win,n_fft);
     // window_sumsquare(x,size,n_frames,win,n_fft,hop);
 
 
@@ -56,33 +56,33 @@ int main(){
     print_array(audio,0,audio_size,1);
 
     cout<<"****************FFT******************"<<endl;
-    RFFT(audio, audio_size, spectrum);
+    stft(audio, audio_size, spectrum, win);
     print_array(spectrum,0,spectrum_size,1,true);
 
-    cout<<"****************ABS******************"<<endl;
-    magnitude(spectrum,abs_spect,spectrum_size);
-    print_array(abs_spect,0,spectrum_size,1,true);
+    // cout<<"****************ABS******************"<<endl;
+    // magnitude(spectrum,abs_spect,spectrum_size);
+    // print_array(abs_spect,0,spectrum_size,1,true);
 
-    cout<<"****************ANGLE****************"<<endl;
-    angle(spectrum,phase,spectrum_size);
-    print_array(phase,0,spectrum_size,1,true);
+    // cout<<"****************ANGLE****************"<<endl;
+    // angle(spectrum,phase,spectrum_size);
+    // print_array(phase,0,spectrum_size,1,true);
 
-    cout<<"****************COMPLEX FROM POLAR***"<<endl;
-    complex_from_polar(abs_spect, phase, spect, spectrum_size);
-    print_array(spect,0,spectrum_size,1,true);
+    // cout<<"****************COMPLEX FROM POLAR***"<<endl;
+    // complex_from_polar(abs_spect, phase, spect, spectrum_size);
+    // print_array(spect,0,spectrum_size,1,true);
 
-    cout<<"****************INVERSE**************"<< endl;
-    IRFFT(spectrum,spectrum_size,restored_audio);
-    print_array(restored_audio,0,audio_size,1,false);
+    // cout<<"****************INVERSE**************"<< endl;
+    // IRFFT(spectrum,spectrum_size,restored_audio);
+    // print_array(restored_audio,0,audio_size,1,false);
 
-    double mat[3][3] = { { 1, 2, 30 }, 
-                      { 4, 5, 6 }, 
-                      { 7, 8, 9 } }; 
+    // double mat[3][3] = { { 1, 2, 30 }, 
+    //                   { 4, 5, 6 }, 
+    //                   { 7, 8, 9 } }; 
 
-    double mu = mean((double *)mat,3,3);
-    double sigma = std_deviation((double *)mat,3,3,mu);
+    // double mu = mean((double *)mat,3,3);
+    // double sigma = std_deviation((double *)mat,3,3,mu);
 
-    cout<<mu<<"\t"<<sigma<<endl;
+    // cout<<mu<<"\t"<<sigma<<endl;
 
 	return 0;
 }
