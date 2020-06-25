@@ -48,6 +48,20 @@ double std_deviation(double* arr, int m,int n, double mean)
     return sqrt(var);
 } 
 
+void normalize(double* arr, int m, int n, double mean, double std_dev){
+    for (int i = 0; i < m; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            double temp = *((arr+i*n) + j);
+            temp = (temp - mean)/std_dev;
+            *((arr+i*n) + j) = temp;
+        }
+        
+    }
+    
+}
+
 void magnitude(cd* spectrum, double* mag, int size){
     for(int i=0; i<size; i++){
         mag[i] = abs(spectrum[i]);

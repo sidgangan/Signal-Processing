@@ -15,7 +15,7 @@ void hamming(double* a, int size){
 void window_sumsquare(double window_sum[], int n, int n_frames, double win[], int n_fft, int hop){
     // win => hamming window of size n_fft
     // window_sum => sumsquare array of size n_fft + hop*(n_frames - 1) , should be initiallized to zero
-    // size => n_fft + hop*(n_frames - 1)
+    // n => n_fft + hop*(n_frames - 1)
     
     // square the win array elements
     square(win, n_fft);

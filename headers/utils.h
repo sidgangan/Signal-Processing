@@ -22,6 +22,7 @@ void copy_array(T* src, T* dest, int size){
 double mean(double* arr, int m, int n);
 double mean_square(double* arr, int m, int n);
 double std_deviation(double* arr, int m,int n, double mean);
+void normalize(double* arr, int m, int n, double mean, double std_dev);
 void magnitude(cd* spectrum, double* mag, int size);
 void angle(cd* spectrum, double* ang, int size);
 void complex_from_polar(double* mag, double* phase, cd* spect, int size);
