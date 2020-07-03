@@ -9,3 +9,6 @@ g++ -c -o utils.o source/utils.cpp
 
 //link all and create executable "main"
 g++ -o main main.o dsp.o utils.o
+
+//running tflite demo
+g++ tflite_demo.cpp -Itensorflow -Llibraries -ltensorflow-lite -lrt -ldl -pthread -o tflite_demo
