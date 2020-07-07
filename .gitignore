@@ -1,6 +1,9 @@
 *.o
 main
 tflite_demo
+read_wav
 results.txt
+audio.txt
 .vscode/
 tensorflow/
+sounds/
