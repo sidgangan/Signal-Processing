@@ -1,4 +1,6 @@
 *.o
 main
+tflite_demo
+results.txt
 .vscode/
 tensorflow/
