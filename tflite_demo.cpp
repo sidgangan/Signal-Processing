@@ -37,7 +37,7 @@ int main(){
     // Dummy input for testing
     for(int i=0;i<129;i++){
         for(int j=0;j<8;j++){
-            my_input[0][i][j][0] = 0.5;
+            my_input[0][i][j][0] = 1.5;
         }
     }
 
