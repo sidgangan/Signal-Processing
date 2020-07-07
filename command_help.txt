@@ -12,3 +12,6 @@ g++ -o main main.o dsp.o utils.o
 
 //running tflite demo
 g++ tflite_demo.cpp -Itensorflow -Llibraries -ltensorflow-lite -lrt -ldl -pthread -o tflite_demo
+
+// running read wav file
+g++ -o read_wav read_wav.cpp && ./read_wav > audio.txt

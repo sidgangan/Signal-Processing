@@ -49,7 +49,7 @@ int main()
 
 {
 	FILE * infile = fopen("sounds/output.wav","rb");		// Open wave file in read mode
-	FILE * outfile = fopen("sounds/output2.wav","wb");		// Create output ( wave format) file in write mode
+	// FILE * outfile = fopen("sounds/output2.wav","wb");		// Create output ( wave format) file in write mode
 
 	int BUFSIZE = 1;					// BUFSIZE can be changed according to the frame size required (eg:512)
 	int count = 0;						// For counting number of frames in wave file.
@@ -59,14 +59,14 @@ int main()
 	if (infile)
 	{
 		fread(meta, 1, sizeof(header), infile);
-		fwrite(meta,1, sizeof(*meta), outfile);
-		cout << " Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
-		cout << " Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
-        cout << " Bits per Sample is "<< meta->bits_per_sample << endl;
-		cout << " Number of samples in wave file are " << meta->subchunk2_size*8/meta->bits_per_sample << " samples" << endl;
+		// fwrite(meta,1, sizeof(*meta), outfile);
+		cout << "Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
+		cout << "Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
+        cout << "Bits per Sample is "<< meta->bits_per_sample << endl;
+		cout << "Number of samples in wave file are " << meta->subchunk2_size*8/meta->bits_per_sample << " samples" << endl;
 
-        int size = meta->subchunk2_size*8/meta->bits_per_sample;
-        short int audio[size];
+        int size = meta->subchunk2_size*8/meta->bits_per_sample; // size of PCM data in bytes
+        short int audio[size]; // array to store audio PCM data
 
 
 		while (!feof(infile))
@@ -79,14 +79,17 @@ int main()
             audio[count-1] = buff16[0];
 
 
-			fwrite(buff16,2,nb,outfile);			// Writing read data into output file
+			// fwrite(buff16,2,nb,outfile);			// Writing read data into output file
 		}
-	cout << " Number of frames in the input wave file are " <<count << endl;
-    cout << " Start audio PCM Data \n"<<endl;
-    for(int i=0 ; i< size+1 ; i++){
-        cout<<audio[i]<<endl;
-    }
+        cout << "Number of frames in the input wave file are " <<count << endl;
+        cout << "Start audio PCM Data \n"<<endl;
+
+        // print audio data
+        // for(int i=0 ; i< size+1 ; i++){
+        //     cout<<audio[i]<<endl;
+        // }
 	}
-return 0;
+
+    return 0;
 }
 
