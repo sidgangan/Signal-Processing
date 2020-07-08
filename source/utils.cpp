@@ -1,12 +1,9 @@
 #include<iostream>
 #include<complex>
+#include "../headers/utils.h"
 using namespace std;
 
 typedef complex<double> cd;
-const double PI = acos(-1);
-
-
-
 
 
 
