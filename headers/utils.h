@@ -82,3 +82,41 @@ invert => True/FFT , False/IFFT
 void fft_util(cd* a, int size, bool invert);
 
 
+/*
+return false if no audio chunk returned i.e size is zero
+return 256 size always
+return less than 256 for ending part
+*/
+bool get_audio_chunk(double* audio, int* size);
+
+/*
+Appends spectrum at the end of model input
+Also pops the beginning column and appends at last
+pos => column position to append
+*/
+template<class T>
+void append_to_model_input(T model_input[1][129][8][1], T spectrum[], int spect_size, int pos){
+    
+    if(pos < 8){
+        for(int i=0 ; i< spect_size ; i++){
+            model_input[0][i][pos][0] = spectrum[i];
+        }
+
+    }else{
+        
+        // shift all columns to left
+        for(int i=0 ; i< spect_size ; i++){
+            for(int j=0 ; j < pos-1 ; i++){
+                model_input[0][i][j][0] = model_input[0][i][j+1][0];
+            }
+        }
+
+        // add spectrum in last column
+        for(int i=0 ; i< spect_size ; i++){
+            model_input[0][i][pos-1][0] = spectrum[i];
+        }
+
+    }
+}
+
+
