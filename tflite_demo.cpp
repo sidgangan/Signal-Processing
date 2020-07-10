@@ -30,14 +30,14 @@ int main(){
     float* input = interpreter->typed_input_tensor<float>(0);
 
     // create input output arrays of required dimensions
-    float my_input[1][129][8][1];
-    float my_output[1][129][1][1];
+    float my_input[129][8]; //same as (1,129,8,1)
+    float my_output[129]; //same as (1,129,1,1)
 
 
     // Dummy input for testing
     for(int i=0;i<129;i++){
         for(int j=0;j<8;j++){
-            my_input[0][i][j][0] = 1.5;
+            my_input[i][j] = 1.5;
         }
     }
 
@@ -57,9 +57,8 @@ int main(){
 
     printf("Result is:\n");
     for(int i=0;i<129;i++){
-        for(int j=0;j<1;j++){
-            printf("%f\n",my_output[0][i][j][0]);
-        }
+            printf("%f\n",my_output[i]);
+        
     }
 
     return 0;

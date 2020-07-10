@@ -3,6 +3,14 @@ using namespace std;
 
 typedef complex<double> cd;
 const double PI = acos(-1);
+const int audio_size = 256;
+const int n_fft = 256;
+const int hop = 64;
+const int n_frames = 4;
+const int sumsquare_size = n_fft + hop*(n_frames - 1);
+const int spectrum_size = audio_size/2 +1;
+const int num_segments = 8;
+const int out_num_segments = 4;
 
 // Squaring a collection / array
 template<class T>
@@ -25,28 +33,28 @@ Calculates mean of elements in given 2D array
 Usage: mean((double *)arr, m, n) 
 where arr is m x n 2D array
 */
-double mean(double* arr, int m, int n);
+double mean(double arr[spectrum_size][num_segments], int m, int n);
 
 /*
 Calculates mean of squares of elements in given 2D array
 Usage: mean_square((double *)arr, m, n) 
 where arr is m x n 2D array
 */
-double mean_square(double* arr, int m, int n);
+double mean_square(double arr[spectrum_size][num_segments], int m, int n);
 
 /*
 Calculates std deviation of elements in given 2D array
 Usage: std_deviation((double *)arr, m, n, mean) 
 where arr is m x n 2D array
 */
-double std_deviation(double* arr, int m,int n, double mean);
+double std_deviation(double arr[spectrum_size][num_segments], int m,int n, double mean);
 
 /*
 Normalize values around given mean and std deviation
 Usage: normalize((double *)arr, m, n, mean, std_dev) 
 where arr is m x n 2D array
 */
-void normalize(double* arr, int m, int n, double mean, double std_dev);
+void normalize(double arr[spectrum_size][num_segments], double norm[spectrum_size][num_segments], int m, int n, double mean, double std_dev);
 
 /*
 Calculates magnitude of each complex number in spectrum array
@@ -95,25 +103,55 @@ Also pops the beginning column and appends at last
 pos => column position to append
 */
 template<class T>
-void append_to_model_input(T model_input[1][129][8][1], T spectrum[], int spect_size, int pos){
+void append_to_model_input(T model_input[spectrum_size][num_segments], T spectrum[], int spect_size, int pos){
     
-    if(pos < 8){
+    if(pos < num_segments){
         for(int i=0 ; i< spect_size ; i++){
-            model_input[0][i][pos][0] = spectrum[i];
+            model_input[i][pos] = spectrum[i];
         }
 
     }else{
-        
+
         // shift all columns to left
         for(int i=0 ; i< spect_size ; i++){
             for(int j=0 ; j < pos-1 ; i++){
-                model_input[0][i][j][0] = model_input[0][i][j+1][0];
+                model_input[i][j] = model_input[i][j+1];
             }
         }
 
         // add spectrum in last column
         for(int i=0 ; i< spect_size ; i++){
-            model_input[0][i][pos-1][0] = spectrum[i];
+            model_input[i][pos-1] = spectrum[i];
+        }
+
+    }
+}
+
+/*
+Appends output at the end of model output
+Also pops the beginning column and appends at last
+pos => column position to append
+*/
+template<class T>
+void append_to_model_output(T model_output[spectrum_size][out_num_segments],T output[], int spect_size, int pos){
+
+    if(pos < out_num_segments){
+        for(int i=0 ; i< spect_size ; i++){
+            model_output[i][pos] = output[i];
+        }
+
+    }else{
+
+        // shift all columns to left
+        for(int i=0 ; i< spect_size ; i++){
+            for(int j=0 ; j < pos-1 ; i++){
+                model_output[i][j] = model_output[i][j+1];
+            }
+        }
+
+        // add output in last column
+        for(int i=0 ; i< spect_size ; i++){
+            model_output[i][pos-1] = output[i];
         }
 
     }

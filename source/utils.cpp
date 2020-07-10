@@ -9,26 +9,26 @@ typedef complex<double> cd;
 
 // using function:
 // mean((double *)arr, m, n) where arr is m x n 2D array
-double mean(double* arr, int m, int n) 
+double mean(double arr[spectrum_size][num_segments], int m, int n) 
 { 
     // Calculating sum 
     int sum = 0; 
     for (int  i = 0; i < m; i++)  
         for (int j = 0; j < n; j++) 
-            sum += *((arr+i*n) + j); 
+            sum += arr[i][j]; 
       
     // Returning mean 
     return sum / (m * n); 
 }
 
-double mean_square(double* arr, int m, int n) 
+double mean_square(double arr[spectrum_size][num_segments], int m, int n) 
 { 
     // Calculating sum 
     double sum = 0;
     double val = 0;
     for (int  i = 0; i < m; i++)  
         for (int j = 0; j < n; j++) {
-            val = *((arr+i*n) + j); 
+            val = arr[i][j]; 
             sum += val*val;
         }
             
@@ -37,7 +37,7 @@ double mean_square(double* arr, int m, int n)
     return sum / (m * n); 
 }
 
-double std_deviation(double* arr, int m,int n, double mean) 
+double std_deviation(double arr[spectrum_size][num_segments], int m,int n, double mean) 
 { 
     double ex = mean;
     double ex2 = mean_square(arr, m, n);
@@ -45,14 +45,12 @@ double std_deviation(double* arr, int m,int n, double mean)
     return sqrt(var);
 } 
 
-void normalize(double* arr, int m, int n, double mean, double std_dev){
+void normalize(double arr[spectrum_size][num_segments], double norm[spectrum_size][num_segments], int m, int n, double mean, double std_dev){
     for (int i = 0; i < m; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            double temp = *((arr+i*n) + j);
-            temp = (temp - mean)/std_dev;
-            *((arr+i*n) + j) = temp;
+            norm[i][j] = (arr[i][j] - mean)/std_dev;
         }
         
     }
