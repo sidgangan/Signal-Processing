@@ -79,7 +79,7 @@ phase => angle array
 spect => output array of complex numbers
 size => size of arrays
 */
-void complex_from_polar(double* mag, double* phase, cd* spect, int size);
+void complex_from_polar(double mag[spectrum_size][out_num_segments], double phase[spectrum_size][out_num_segments], cd spect[spectrum_size][out_num_segments], int m, int n);
 
 /*
 Calculates FFT as well as Inverse FFT of array
@@ -157,4 +157,14 @@ void append_to_model_output(T model_output[spectrum_size][out_num_segments],T ou
     }
 }
 
+/*
+De-Normalize values around given mean and std deviation
+Usage: normalize((double *)arr, m, n, mean, std_dev) 
+where arr is m x n 2D array
+*/
+void denormalize(double arr[spectrum_size][out_num_segments], double denorm[spectrum_size][out_num_segments], int m, int n, double mean, double std_dev);
 
+/*
+Get phase of recent 4(required num) spectrums
+*/
+void get_latest_phase(double in_phase[spectrum_size][num_segments], double out_phase[num_segments][out_num_segments]);

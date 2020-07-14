@@ -110,6 +110,7 @@ int main(){
     double normalized_model_output[129]; //same as (1,129,1,1)
     double model_output_mag[129][4];
     double model_output_denorm[129][4];
+    double model_output_phase[129][4];
     cd model_output_spect[129][4];
     double output_audio_chunk[64]; // this will be written to output buffer
     
@@ -173,7 +174,16 @@ int main(){
                 ++model_output_size;
 
             }else{
-                
+                // scale up the magnitude
+                denormalize(model_output_mag,model_output_denorm,spectrum_size,out_num_segments,mu,sigma);
+
+                // get phase of recent 4 spectrums
+                get_latest_phase(model_input_phase, model_output_phase);
+
+                // convert to spectrum form
+                complex_from_polar(model_output_mag,model_output_phase,model_output_spect,spectrum_size,out_num_segments);
+
+                // get output audio chunk
             }
 
 

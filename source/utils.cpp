@@ -69,9 +69,12 @@ void angle(cd* spectrum, double* ang, int size){
     }
 }
 
-void complex_from_polar(double* mag, double* phase, cd* spect, int size){
-    for(int i=0; i<size; i++){
-        spect[i] = polar(mag[i], phase[i]);
+void complex_from_polar(double mag[spectrum_size][out_num_segments], double phase[spectrum_size][out_num_segments], cd spect[spectrum_size][out_num_segments], int m, int n){
+    for(int i=0; i<m; i++){
+        for(int j=0; j<n; j++){
+            spect[i][j] = polar(mag[i][j], phase[i][j]);
+        }
+        
     }
 }
 
@@ -108,4 +111,25 @@ void fft_util(cd* a, int size, bool invert) {
     }
 }
 
+
+void denormalize(double arr[spectrum_size][out_num_segments], double denorm[spectrum_size][out_num_segments], int m, int n, double mean, double std_dev){
+    for (int i = 0; i < m; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            denorm[i][j] = arr[i][j]*std_dev + mean;
+        }
+        
+    }
+}
+
+void get_latest_phase(double in_phase[spectrum_size][num_segments], double out_phase[num_segments][out_num_segments]){
+    
+    int shift = num_segments - out_num_segments;
+    for(int j=0; j<out_num_segments; j++){
+        for(int i=0; i<spectrum_size; i++){
+            out_phase[i][j] = in_phase[i][j + shift];
+        }
+    }
+}
 
