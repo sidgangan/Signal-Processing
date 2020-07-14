@@ -1,4 +1,5 @@
 Create overlap_add function
 Create IFFT wth window, sumsquare and taking 4 spectrum as input
 Matrix operations
-Reading audio wav file.
+
+** De normalization of output is fishy, check that later.
