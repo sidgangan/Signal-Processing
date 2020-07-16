@@ -42,3 +42,10 @@ spectrum => FFT of audio
 hamming_window => window array
 */
 void stft(double* audio, int audio_size, cd* spectrum, double* hamming_window);
+
+
+/*
+IRFFT including window and sumsquare envelope
+audio => should be initialized to zeros
+*/
+void istft(cd spectrum[spectrum_size][out_num_segments],double audio[sumsquare_size],double win[], double win_sumsquare[]);

@@ -40,7 +40,9 @@ int main(){
     // int num_segments = 8;
 
 
-    double audio[] = {0.5,1,3,4,0.5,1.5,3.5,4.5,4.5,3.5,1.5,0.5,4,3,1,0.5};
+    // double audio[] = {0.5,1,3,4,0.5,1.5,3.5,4.5,4.5,3.5,1.5,0.5,4,3,1,0.5};
+
+
     cd* spectrum = (cd *)malloc(spectrum_size * sizeof(cd));
     double* restored_audio = (double *)malloc(audio_size * sizeof(double));
     double* abs_spect = (double *)malloc(spectrum_size * sizeof(double));
@@ -112,6 +114,7 @@ int main(){
     double model_output_denorm[129][4];
     double model_output_phase[129][4];
     cd model_output_spect[129][4];
+    double* restored_output_audio = (double*)calloc(sumsquare_size,__SIZEOF_DOUBLE__);
     double output_audio_chunk[64]; // this will be written to output buffer
     
     int chunk_size;
@@ -183,7 +186,16 @@ int main(){
                 // convert to spectrum form
                 complex_from_polar(model_output_mag,model_output_phase,model_output_spect,spectrum_size,out_num_segments);
 
-                // get output audio chunk
+                // get output audio
+                istft(model_output_spect,restored_output_audio,win,win_sumsquare);
+
+                // get mid 64 audio points
+                for(int i=0; i<64; i++){
+                    output_audio_chunk[i] = restored_output_audio[i+192];
+                }
+
+                // write to output buffer
+                write_audio_chunk(output_audio_chunk, 64);
             }
 
 

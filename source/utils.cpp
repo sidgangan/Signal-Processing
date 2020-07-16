@@ -111,6 +111,15 @@ void fft_util(cd* a, int size, bool invert) {
     }
 }
 
+bool get_audio_chunk(double* audio, int* size){
+    // reading code goes heree
+    return true;
+}
+
+bool write_audio_chunk(double* audio, int size){
+    // writing code goes here
+    return true;
+}
 
 void denormalize(double arr[spectrum_size][out_num_segments], double denorm[spectrum_size][out_num_segments], int m, int n, double mean, double std_dev){
     for (int i = 0; i < m; i++)

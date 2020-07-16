@@ -2,15 +2,15 @@
 using namespace std;
 
 typedef complex<double> cd;
-const double PI = acos(-1);
-const int audio_size = 256;
-const int n_fft = 256;
-const int hop = 64;
-const int n_frames = 4;
-const int sumsquare_size = n_fft + hop*(n_frames - 1);
-const int spectrum_size = audio_size/2 +1;
-const int num_segments = 8;
-const int out_num_segments = 4;
+extern const double PI = acos(-1);
+extern const int audio_size = 256;
+extern const int n_fft = 256;
+extern const int hop = 64;
+extern const int n_frames = 4;
+extern const int sumsquare_size = n_fft + hop*(n_frames - 1);
+extern const int spectrum_size = audio_size/2 +1;
+extern const int num_segments = 8;
+extern const int out_num_segments = 4;
 
 // Squaring a collection / array
 template<class T>
@@ -96,6 +96,11 @@ return 256 size always
 return less than 256 for ending part
 */
 bool get_audio_chunk(double* audio, int* size);
+
+/*
+return true for successfull write
+*/
+bool write_audio_chunk(double* audio, int size);
 
 /*
 Appends spectrum at the end of model input

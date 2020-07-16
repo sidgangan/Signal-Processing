@@ -86,3 +86,41 @@ void stft(double* audio, int audio_size, cd* spectrum, double* hamming_window){
     RFFT(temp_spect, audio_size, spectrum);
 
 }
+
+void istft(cd spectrum[spectrum_size][out_num_segments],double audio[sumsquare_size],double win[], double win_sumsquare[]){
+    cd temp_spect[out_num_segments][spectrum_size];
+    double temp_audio[out_num_segments][audio_size];
+
+    // transpose (129,4) -> (4,129)
+    for(int i=0; i<out_num_segments; i++){
+        for(int j=0; j<spectrum_size; j++){
+            temp_spect[i][j] = spectrum[j][i];
+        }
+    }
+
+    // calculate IRFFT of out_num_segment spectrums
+    for(int i=0 ; i<out_num_segments ; i++){
+        IRFFT(temp_spect[i],spectrum_size,temp_audio[i]);
+    }
+
+    // apply window
+    for(int i=0; i<out_num_segments; i++){
+        for(int j=0; j<audio_size; j++){
+            temp_audio[i][j]*=win[j];
+        }
+    }
+
+    // overlap add
+    for(int i=0; i<out_num_segments; i++){
+        int sample = i*hop;
+        for(int j=0; j<audio_size; i++){
+            audio[sample + j] += temp_audio[i][j];
+        }
+    }
+
+    // apply window sumsquare envelop
+    for(int i=0; i<sumsquare_size; i++){
+        audio[i] /= win_sumsquare[i];
+    }
+
+}

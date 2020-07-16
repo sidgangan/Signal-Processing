@@ -1,4 +1,5 @@
 *.o
+*.patch
 main
 tflite_demo
 read_wav
