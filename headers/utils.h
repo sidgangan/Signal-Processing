@@ -1,16 +1,17 @@
 #include<complex.h>
+#include "constants.h"
 using namespace std;
 
 typedef complex<double> cd;
-extern const double PI = acos(-1);
-extern const int audio_size = 256;
-extern const int n_fft = 256;
-extern const int hop = 64;
-extern const int n_frames = 4;
-extern const int sumsquare_size = n_fft + hop*(n_frames - 1);
-extern const int spectrum_size = audio_size/2 +1;
-extern const int num_segments = 8;
-extern const int out_num_segments = 4;
+// extern const double PI = acos(-1);
+// extern const int audio_size = 256;
+// extern const int n_fft = 256;
+// extern const int hop = 64;
+// extern const int n_frames = 4;
+// extern const int sumsquare_size = n_fft + hop*(n_frames - 1);
+// extern const int spectrum_size = audio_size/2 +1;
+// extern const int num_segments = 8;
+// extern const int out_num_segments = 4;
 
 // Squaring a collection / array
 template<class T>

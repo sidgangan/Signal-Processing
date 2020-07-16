@@ -1,4 +1,5 @@
 #include<complex.h>
+#include "constants.h"
 using namespace std;
 
 typedef complex<double> cd;

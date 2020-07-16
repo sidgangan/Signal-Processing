@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <string>
-#include "../tensorflow/tensorflow/lite/interpreter.h"
-#include "../tensorflow/tensorflow/lite/kernels/register.h"
-#include "../tensorflow/tensorflow/lite/model.h"
-#include "../tensorflow/tensorflow/lite/tools/gen_op_registration.h"
+#include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/model.h"
+#include "tensorflow/lite/tools/gen_op_registration.h"
 
 int main(){
 

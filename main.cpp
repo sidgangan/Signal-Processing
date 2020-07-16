@@ -1,7 +1,14 @@
 #include<iostream>
 #include<complex>
+#include "headers/constants.h"
 #include "headers/utils.h"
 #include "headers/dsp.h"
+#include <stdio.h>
+#include <string>
+#include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/model.h"
+#include "tensorflow/lite/tools/gen_op_registration.h"
 using namespace std;
 
 typedef complex<double> cd;
@@ -29,76 +36,55 @@ void print_array(T* a, int start, int len, int stride, bool column=false){
 //-----------------------------------------------------------------------------------------------------------------//
 
 int main(){
-	
-	
-    // int audio_size = 256;
-    // int n_fft = 256;
-    // int hop = 64;
-    // int n_frames = 4;
-    // int size = n_fft + hop*(n_frames - 1);
-    // int spectrum_size = audio_size/2 +1;
-    // int num_segments = 8;
+
+    /*********************TF-LITE INITIALIZATIONS BEGIN******************************/
+    // load model
+    std::unique_ptr<tflite::FlatBufferModel> model = tflite::FlatBufferModel::BuildFromFile("test2.tflite");
+    
+    if(!model){
+        printf("Failed to mmap model\n");
+        exit(0);
+    }
+
+    // build interpreter
+    tflite::ops::builtin::BuiltinOpResolver resolver;
+    std::unique_ptr<tflite::Interpreter> interpreter;
+    tflite::InterpreterBuilder(*model.get(), resolver)(&interpreter);
+
+    // Resize input tensors
+    interpreter->ResizeInputTensor(0,{1,129,8,1});
+
+    // Allocate tensors
+    interpreter->AllocateTensors();
+
+    // pointer to input tensor of interpreter
+    float* input = interpreter->typed_input_tensor<float>(0);
+
+    // pointer to output tensor of interpreter
+    float* output = interpreter->typed_output_tensor<float>(0);
+
+    // create input output arrays of required dimensions
+    float my_input[129][8]; //same as (1,129,8,1)
+    float my_output[129]; //same as (1,129,1,1)
 
 
-    // double audio[] = {0.5,1,3,4,0.5,1.5,3.5,4.5,4.5,3.5,1.5,0.5,4,3,1,0.5};
+    // Dummy input for testing
+    for(int i=0;i<129;i++){
+        for(int j=0;j<8;j++){
+            my_input[i][j] = 1.5;
+        }
+    }
+	/*********************TF-LITE INITIALIZATIONS END******************************/
 
-
+    /*********************DSP INITIALIZATIONS BEGIN******************************/
+    
     cd* spectrum = (cd *)malloc(spectrum_size * sizeof(cd));
-    double* restored_audio = (double *)malloc(audio_size * sizeof(double));
     double* abs_spect = (double *)malloc(spectrum_size * sizeof(double));
     double* phase = (double *)malloc(spectrum_size * sizeof(double));
-    cd* spect = (cd *)malloc(spectrum_size * sizeof(cd));
 
     double* win = (double*)calloc(n_fft,__SIZEOF_DOUBLE__); // array for hamming window
     double* win_sumsquare = (double* )calloc(sumsquare_size, __SIZEOF_DOUBLE__);  // array for sumsquare
 
-    // hamming(win,n_fft);
-    // window_sumsquare(win_sumsquare,size,n_frames,win,n_fft,hop);
-
-
-    // cout<<"****************AUDIO****************"<<endl;
-    // print_array(audio,0,audio_size,1);
-
-    // cout<<"****************FFT******************"<<endl;
-    // stft(audio, audio_size, spectrum, win);
-    // print_array(spectrum,0,spectrum_size,1,true);
-
-    // cout<<"****************ABS******************"<<endl;
-    // magnitude(spectrum,abs_spect,spectrum_size);
-    // print_array(abs_spect,0,spectrum_size,1,true);
-
-    // cout<<"****************ANGLE****************"<<endl;
-    // angle(spectrum,phase,spectrum_size);
-    // print_array(phase,0,spectrum_size,1,true);
-
-    // cout<<"****************COMPLEX FROM POLAR***"<<endl;
-    // complex_from_polar(abs_spect, phase, spect, spectrum_size);
-    // print_array(spect,0,spectrum_size,1,true);
-
-    // cout<<"****************INVERSE**************"<< endl;
-    // IRFFT(spectrum,spectrum_size,restored_audio);
-    // print_array(restored_audio,0,audio_size,1,false);
-
-    // double mat[3][3] = { { 1, 2, 30 }, 
-    //                   { 4, 5, 6 }, 
-    //                   { 7, 8, 9 } }; 
-
-    // double mu = mean((double *)mat,3,3);
-    // double sigma = std_deviation((double *)mat,3,3,mu);
-    // normalize((double *)mat,3,3,mu,sigma);
-
-    // for (int i = 0; i < 3; i++)
-    // {
-    //     for (int j = 0; j < 3; j++)
-    //     {
-    //         cout<<mat[i][j]<<"\t";
-    //     }
-    //     cout<<endl;
-        
-    // }
-
-
-    // END TO END FLOW
 
     double mu = 0;
     double sigma = 0;
@@ -120,10 +106,15 @@ int main(){
     int chunk_size;
     int model_input_size = 0; // iterating over columns, 0 to 7
     int model_output_size = 0; // iterating over columns, 0 to 3
+    int tflite_input_size = spectrum_size*num_segments*__SIZEOF_FLOAT__;
+    int tflite_output_size = spectrum_size*__SIZEOF_FLOAT__;
 
     hamming(win,n_fft); // allocating hamming window
     window_sumsquare(win_sumsquare,sumsquare_size,n_frames,win,n_fft,hop); // allocatinf sumsquare envelop array
 
+    /*********************DSP INITIALIZATIONS END******************************/
+
+    /*********************DENOISING BEGIN******************************/
     // start loop for denoising
     while(get_audio_chunk(input_audio_chunk, &chunk_size)){
         // zero pad if less than window length
@@ -164,11 +155,20 @@ int main(){
             sigma = std_deviation(model_input_mag,spectrum_size,num_segments,mu);
             normalize(model_input_mag,normalized_model_input,spectrum_size,num_segments,mu,sigma);
 
-            // pass normalized model input to the Denoising mode
-            // 
-            // code of passing input to tflite and taking output goes here
-            // 
-            // process the output of model (1D array of size 129)
+            /** pass normalized model input to the Denoising mode **/
+
+            // copy input array to tflite input
+            //memcpy(input,normalized_model_input,tflite_input_size);
+            memcpy(input,my_input,tflite_input_size); // test input
+
+            // run model
+            interpreter->Invoke();
+
+            // copy tflite output to output array
+            //memcpy(normalized_model_output,output,tflite_output_size);
+            memcpy(my_output,output,tflite_output_size); //test output
+
+            /** process the output of model (1D array of size 129) **/
 
             append_to_model_output(model_output_mag,normalized_model_output,spectrum_size,model_output_size);
 
@@ -203,6 +203,8 @@ int main(){
 
         
     }
+
+    /*********************DENOISING END******************************/
 
 
 	return 0;
