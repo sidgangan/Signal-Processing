@@ -1,4 +1,6 @@
 #include<iostream>
+#include <stdio.h>
+#include <stdlib.h>
 #include<complex>
 #include "headers/constants.h"
 #include "headers/utils.h"
@@ -12,6 +14,26 @@
 using namespace std;
 
 typedef complex<double> cd;
+
+// WAVE PCM soundfile format (you can find more in https://ccrma.stanford.edu/courses/422/projects/WaveFormat/ )
+typedef struct header_file
+{
+    char chunk_id[4];
+    int chunk_size;
+    char format[4];
+    char subchunk1_id[4];
+    int subchunk1_size;
+    short int audio_format;
+    short int num_channels;
+    int sample_rate;			// sample_rate denotes the sampling rate.
+    int byte_rate;
+    short int block_align;
+    short int bits_per_sample;
+    char subchunk2_id[4];
+    int subchunk2_size;			// subchunk2_size denotes the total size in bytes of samples.
+} header;
+
+typedef struct header_file* header_p;
 /************* UTILS ************/
 
 template<class T>
@@ -29,6 +51,21 @@ void print_array(T* a, int start, int len, int stride, bool column=false){
     cout<<endl;
 }
 
+bool get_chunk(short int audio[], int audio_len, double audio_chunk[],int* itr, int* chunk_size){
+    if(*itr<audio_len){
+
+        int i=0;
+        while(i<n_fft && (*itr + i) < audio_len){
+            audio_chunk[i] = (double)(audio[i+ *itr])/32768.0;
+            i++;
+        }
+        *chunk_size = i;
+        *itr = *itr + i;
+        return true;
+    }
+    return false;
+}
+
 
 
 
@@ -36,6 +73,51 @@ void print_array(T* a, int start, int len, int stride, bool column=false){
 //-----------------------------------------------------------------------------------------------------------------//
 
 int main(){
+    /**********************READ AUDIO FILE BEGIN*************************************/
+    FILE * infile = fopen("sounds/sample.wav","rb");		// Open wave file in read mode
+	FILE * outfile = fopen("sounds/output.wav","wb");		// Create output ( wave format) file in write mode
+    short int audio[1000000]; // array to store audio PCM data
+    int* size; // length of audio
+    *size = 0; // initialized to zero
+	int BUFSIZE = 1;					// BUFSIZE can be changed according to the frame size required (eg:512)
+	int count = 0;						// For counting number of frames in wave file.
+	short int buff16[BUFSIZE];			// short int used for 16 bit as input data format is 16 bit PCM audio
+	header_p meta = (header_p)malloc(sizeof(header));	// header_p points to a header struct that contains the wave file metadata fields
+	int nb;
+    if (infile)
+	{
+		fread(meta, 1, sizeof(header), infile);
+		fwrite(meta,1, sizeof(*meta), outfile);
+		cout << "Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
+		cout << "Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
+        cout << "Bits per Sample is "<< meta->bits_per_sample << endl;
+		cout << "Number of samples in wave file are " << meta->subchunk2_size*8/meta->bits_per_sample << " samples" << endl;
+
+        *size = meta->subchunk2_size*8/meta->bits_per_sample; // length of PCM data
+        
+
+
+		while (!feof(infile))
+		{
+			nb = fread(buff16,2,BUFSIZE,infile);		// Reading data in chunks of BUFSIZE
+			//cout << nb <<endl;
+			count++;					// Incrementing Number of frames
+
+			/* Insert your processing code here*/
+            audio[count-1] = buff16[0];
+
+
+			// fwrite(buff16,2,nb,outfile);			// Writing read data into output file
+		}
+        cout << "Number of frames in the input wave file are " <<count << endl;
+        cout << "Start audio PCM Data \n"<<endl;
+
+        // print audio data
+        // for(int i=0 ; i< size+1 ; i++){
+        //     cout<<audio[i]<<endl;
+        // }
+	}
+    /**********************READ AUDIO FILE ENDS*************************************/
 
     /*********************TF-LITE INITIALIZATIONS BEGIN******************************/
     // load model
@@ -103,7 +185,7 @@ int main(){
     double* restored_output_audio = (double*)calloc(sumsquare_size,__SIZEOF_DOUBLE__);
     double output_audio_chunk[64]; // this will be written to output buffer
     
-    int chunk_size;
+    int chunk_size=0; // length of audio data read
     int model_input_size = 0; // iterating over columns, 0 to 7
     int model_output_size = 0; // iterating over columns, 0 to 3
     int tflite_input_size = spectrum_size*num_segments*__SIZEOF_FLOAT__;
@@ -114,9 +196,10 @@ int main(){
 
     /*********************DSP INITIALIZATIONS END******************************/
 
+    int itr=0;
     /*********************DENOISING BEGIN******************************/
     // start loop for denoising
-    while(get_audio_chunk(input_audio_chunk, &chunk_size)){
+    while(get_chunk(audio,*size,input_audio_chunk, &itr, &chunk_size)){
         // zero pad if less than window length
         if(chunk_size < audio_size){
             for(int i=chunk_size; i<audio_size; i++){
@@ -194,8 +277,11 @@ int main(){
                     output_audio_chunk[i] = restored_output_audio[i+192];
                 }
 
+                // scale output from double to short (16 bit / 2 bytes)
+                
                 // write to output buffer
-                write_audio_chunk(output_audio_chunk, 64);
+                //write_audio_chunk(output_audio_chunk, 64); //temporary commented
+                fwrite(output_audio_chunk,2,64,outfile);			// Writing read data into output file
             }
 
 
