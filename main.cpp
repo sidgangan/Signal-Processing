@@ -117,6 +117,8 @@ int main(){
         //     cout<<audio[i]<<endl;
         // }
 	}
+
+    fclose(infile);
     /**********************READ AUDIO FILE ENDS*************************************/
 
     /*********************TF-LITE INITIALIZATIONS BEGIN******************************/
@@ -183,7 +185,7 @@ int main(){
     double model_output_phase[129][4];
     cd model_output_spect[129][4];
     double* restored_output_audio = (double*)calloc(sumsquare_size,__SIZEOF_DOUBLE__);
-    double output_audio_chunk[64]; // this will be written to output buffer
+    short output_audio_chunk[64]; // this will be written to output buffer
     
     int chunk_size=0; // length of audio data read
     int model_input_size = 0; // iterating over columns, 0 to 7
@@ -272,13 +274,11 @@ int main(){
                 // get output audio
                 istft(model_output_spect,restored_output_audio,win,win_sumsquare);
 
-                // get mid 64 audio points
+                // get mid 64 audio points and scale them to 2 byte integer
                 for(int i=0; i<64; i++){
-                    output_audio_chunk[i] = restored_output_audio[i+192];
+                    output_audio_chunk[i] = restored_output_audio[i+192]*32768;
                 }
 
-                // scale output from double to short (16 bit / 2 bytes)
-                
                 // write to output buffer
                 //write_audio_chunk(output_audio_chunk, 64); //temporary commented
                 fwrite(output_audio_chunk,2,64,outfile);			// Writing read data into output file
@@ -289,6 +289,8 @@ int main(){
 
         
     }
+
+    fclose(outfile);
 
     /*********************DENOISING END******************************/
 
