@@ -8,7 +8,7 @@ main.o: main.cpp headers/dsp.h headers/utils.h headers/constants.h
 	g++ -c -o main.o main.cpp -Itensorflow
 
 main: main.o dsp.o utils.o
-	g++ -o main main.o dsp.o utils.o -Llibraries -ltensorflow-lite -lrt -ldl -pthread
+	g++ -o main main.o dsp.o utils.o -Llibraries -ltensorflow-lite -ldl -pthread
 
 tflite_demo: tflite_demo.cpp
-	g++ tflite_demo.cpp -Itensorflow -Llibraries -ltensorflow-lite -lrt -ldl -pthread -o tflite_demo
+	g++ tflite_demo.cpp -Itensorflow -Llibraries -ltensorflow-lite -ldl -pthread -o tflite_demo
