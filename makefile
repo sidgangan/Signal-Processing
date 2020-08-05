@@ -4,7 +4,7 @@ utils.o: source/utils.cpp headers/utils.h headers/constants.h
 dsp.o: source/dsp.cpp headers/dsp.h headers/utils.h headers/constants.h
 	g++ -c -o dsp.o source/dsp.cpp
 
-main.o: main.cpp headers/dsp.h headers/utils.h headers/constants.h
+main.o: main.cpp headers/dsp.h headers/utils.h headers/constants.h headers/audio_utils.h
 	g++ -c -o main.o main.cpp -Itensorflow
 
 main: main.o dsp.o utils.o

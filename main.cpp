@@ -4,6 +4,7 @@
 #include<complex>
 #include "headers/constants.h"
 #include "headers/utils.h"
+#include "headers/audio_utils.h"
 #include "headers/dsp.h"
 #include <stdio.h>
 #include <string>
@@ -15,56 +16,7 @@ using namespace std;
 
 typedef complex<double> cd;
 
-// WAVE PCM soundfile format (you can find more in https://ccrma.stanford.edu/courses/422/projects/WaveFormat/ )
-typedef struct header_file
-{
-    char chunk_id[4];
-    int chunk_size;
-    char format[4];
-    char subchunk1_id[4];
-    int subchunk1_size;
-    short int audio_format;
-    short int num_channels;
-    int sample_rate;			// sample_rate denotes the sampling rate.
-    int byte_rate;
-    short int block_align;
-    short int bits_per_sample;
-    char subchunk2_id[4];
-    int subchunk2_size;			// subchunk2_size denotes the total size in bytes of samples.
-} header;
 
-typedef struct header_file* header_p;
-/************* UTILS ************/
-
-template<class T>
-void print_array(T* a, int start, int len, int stride, bool column=false){
-    for(int i=start; i< (start+len); i += stride){
-
-        if(column)
-            cout << a[i] << endl;
-        else
-        {
-            cout << a[i] << "\t";
-        }
-        
-    }
-    cout<<endl;
-}
-
-bool get_chunk(short int audio[], int audio_len, double audio_chunk[],int* itr, int* chunk_size){
-    if(*itr<audio_len){
-
-        int i=0;
-        while(i<n_fft && (*itr + i) < audio_len){
-            audio_chunk[i] = (double)(audio[i+ *itr])/32768.0;
-            i++;
-        }
-        *chunk_size = i;
-        *itr = *itr + i;
-        return true;
-    }
-    return false;
-}
 
 
 
@@ -77,8 +29,9 @@ int main(){
     FILE * infile = fopen("sounds/sample.wav","rb");		// Open wave file in read mode
 	FILE * outfile = fopen("sounds/output.wav","wb");		// Create output ( wave format) file in write mode
     short int audio[1000000]; // array to store audio PCM data
-    int* size; // length of audio
-    *size = 0; // initialized to zero
+    int temp_size = 0;
+    int* size = &temp_size; // length of audio
+    
 	int BUFSIZE = 1;					// BUFSIZE can be changed according to the frame size required (eg:512)
 	int count = 0;						// For counting number of frames in wave file.
 	short int buff16[BUFSIZE];			// short int used for 16 bit as input data format is 16 bit PCM audio
@@ -136,16 +89,18 @@ int main(){
     tflite::InterpreterBuilder(*model.get(), resolver)(&interpreter);
 
     // Resize input tensors
-    interpreter->ResizeInputTensor(0,{1,129,8,1});
+    interpreter->ResizeInputTensor(0,{1,129,8,1}); // not needed
 
     // Allocate tensors
     interpreter->AllocateTensors();
 
     // pointer to input tensor of interpreter
     float* input = interpreter->typed_input_tensor<float>(0);
+    //float* input = interpreter->typed_tensor<float>(1);
 
     // pointer to output tensor of interpreter
     float* output = interpreter->typed_output_tensor<float>(0);
+    //float* input = interpreter->typed_tensor<float>(0);
 
     // create input output arrays of required dimensions
     float my_input[129][8]; //same as (1,129,8,1)
@@ -228,11 +183,16 @@ int main(){
         append_to_model_input(model_input_mag,abs_spect,spectrum_size,model_input_size);
 
         // update model_input_size
-        if(model_input_size < 8){
+        if(model_input_size < (num_segments-1)){
 
             ++model_input_size ;
 
         }else{
+
+            if(model_input_size == (num_segments-1)){
+                model_input_size++;
+            }
+
             // pass input to model
             
             // calculate mean and std dev and normalize inputs
@@ -243,25 +203,28 @@ int main(){
             /** pass normalized model input to the Denoising mode **/
 
             // copy input array to tflite input
-            //memcpy(input,normalized_model_input,tflite_input_size);
-            memcpy(input,my_input,tflite_input_size); // test input
+            memcpy(input,normalized_model_input,tflite_input_size); //memcpy doesnt work coz of float and double type misatch, use loop to copy elements
 
             // run model
             interpreter->Invoke();
 
             // copy tflite output to output array
-            //memcpy(normalized_model_output,output,tflite_output_size);
-            memcpy(my_output,output,tflite_output_size); //test output
+            memcpy(normalized_model_output,output,tflite_output_size); //memcpy doesnt work coz of float and double type misatch, use loop to copy elements
 
             /** process the output of model (1D array of size 129) **/
 
             append_to_model_output(model_output_mag,normalized_model_output,spectrum_size,model_output_size);
 
-            if(model_output_size < 4){
+            if(model_output_size < (out_num_segments-1)){
 
                 ++model_output_size;
 
             }else{
+
+                if(model_output_size == (out_num_segments-1)){
+                    model_output_size++;
+                }
+
                 // scale up the magnitude
                 denormalize(model_output_mag,model_output_denorm,spectrum_size,out_num_segments,mu,sigma);
 
@@ -269,7 +232,12 @@ int main(){
                 get_latest_phase(model_input_phase, model_output_phase);
 
                 // convert to spectrum form
-                complex_from_polar(model_output_mag,model_output_phase,model_output_spect,spectrum_size,out_num_segments);
+                complex_from_polar(model_output_denorm,model_output_phase,model_output_spect,spectrum_size,out_num_segments);
+
+                // initialized restored output to zero
+                for(int i=0; i<sumsquare_size; i++){
+                    restored_output_audio[i] = 0.0;
+                }
 
                 // get output audio
                 istft(model_output_spect,restored_output_audio,win,win_sumsquare);

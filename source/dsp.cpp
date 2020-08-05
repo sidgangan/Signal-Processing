@@ -19,7 +19,8 @@ void window_sumsquare(double window_sum[], int n, int n_frames, double win[], in
     // n => n_fft + hop*(n_frames - 1)
     
     // square the win array elements
-    square(win, n_fft);
+    double win_square[sumsquare_size];
+    square(win,win_square, n_fft);
     
     // fill sumsquare array
     for(int i=0; i<n_frames; i++){
@@ -33,7 +34,7 @@ void window_sumsquare(double window_sum[], int n, int n_frames, double win[], in
         int j = win_start;
 
         while(k<win_sum_end && j<win_end){
-            window_sum[k] += win[j];
+            window_sum[k] += win_square[j];
             k++;
             j++;
         }
@@ -113,7 +114,7 @@ void istft(cd spectrum[spectrum_size][out_num_segments],double audio[sumsquare_s
     // overlap add
     for(int i=0; i<out_num_segments; i++){
         int sample = i*hop;
-        for(int j=0; j<audio_size; i++){
+        for(int j=0; j<audio_size; j++){
             audio[sample + j] += temp_audio[i][j];
         }
     }

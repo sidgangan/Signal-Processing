@@ -1,14 +1,31 @@
+#include<iostream>
 #include<complex.h>
 #include "constants.h"
 using namespace std;
 
 typedef complex<double> cd;
 
+template<class T>
+void print_array(T* a, int start, int len, int stride, bool column=false){
+    for(int i=start; i< (start+len); i += stride){
+
+        if(column)
+            cout << a[i] << endl;
+        else
+        {
+            cout << a[i] << "\t";
+        }
+        
+    }
+    cout<<endl;
+}
+
+
 // Squaring a collection / array
 template<class T>
-void square(T* a, int size){
+void square(T* a,T* a_square, int size){
     for(int i=0; i<size; i++){
-        a[i] *= a[i];
+        a_square[i] = a[i]*a[i];
     }
 }
 
@@ -111,7 +128,7 @@ void append_to_model_input(T model_input[spectrum_size][num_segments], T spectru
 
         // shift all columns to left
         for(int i=0 ; i< spect_size ; i++){
-            for(int j=0 ; j < pos-1 ; i++){
+            for(int j=0 ; j < pos-1 ; j++){
                 model_input[i][j] = model_input[i][j+1];
             }
         }
@@ -141,7 +158,7 @@ void append_to_model_output(T model_output[spectrum_size][out_num_segments],T ou
 
         // shift all columns to left
         for(int i=0 ; i< spect_size ; i++){
-            for(int j=0 ; j < pos-1 ; i++){
+            for(int j=0 ; j < pos-1 ; j++){
                 model_output[i][j] = model_output[i][j+1];
             }
         }
