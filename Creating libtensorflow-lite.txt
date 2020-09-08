@@ -1,0 +1,20 @@
+Building "libtensorflow-lite.a"
+
+Clone tensorflow repo
+Go to path "/tensorflow/tensorflow/lite/tools/make"
+Run file "download_dependencies.sh" : this will download the flatbuffers and other required headers
+Run file "build_lib.sh" : this will build the lib for linux machine in folder "gen"
+
+Tips:
+1. Copy "tensorflow/tensorflow/lite/tools/make/downloads/flatbuffers/include/flatbuffers" to "tensorflow/flatbuffers" : this helps while running the tflite code
+
+2. For using tflite the directory structure should be :
+	-all codes
+	-tensorflow
+		-flatbuffers
+		-tensorflow
+			-lite
+	
+	other than "lite" all other folders can be deleted
+
+
