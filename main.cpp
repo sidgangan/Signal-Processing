@@ -16,12 +16,6 @@ using namespace std;
 
 typedef complex<double> cd;
 
-
-
-
-
-
-
 //-----------------------------------------------------------------------------------------------------------------//
 
 int main(){
@@ -149,13 +143,13 @@ int main(){
     int tflite_output_size = spectrum_size*__SIZEOF_FLOAT__;
 
     hamming(win,n_fft); // allocating hamming window
-    window_sumsquare(win_sumsquare,sumsquare_size,n_frames,win,n_fft,hop); // allocatinf sumsquare envelop array
+    window_sumsquare(win_sumsquare,sumsquare_size,n_frames,win,n_fft,hop); // allocating sumsquare envelop array
 
     /*********************DSP INITIALIZATIONS END******************************/
 
     int itr=0;
-    /*********************DENOISING BEGIN******************************/
-    // start loop for denoising
+    /*********************MODEL EXECUTION BEGIN******************************/
+    // start loop
     while(get_chunk(audio,*size,input_audio_chunk, &itr, &chunk_size)){
         // zero pad if less than window length
         if(chunk_size < audio_size){
@@ -172,9 +166,6 @@ int main(){
 
         // calculate magnitude
         magnitude(spectrum,abs_spect,spectrum_size);
-
-        // append spectrum to model_input_spect
-        append_to_model_input(model_input_spect,spectrum,spectrum_size,model_input_size);
 
         // append phase to model_input_phase
         append_to_model_input(model_input_phase,phase,spectrum_size,model_input_size);
@@ -200,7 +191,7 @@ int main(){
             sigma = std_deviation(model_input_mag,spectrum_size,num_segments,mu);
             normalize(model_input_mag,normalized_model_input,spectrum_size,num_segments,mu,sigma);
 
-            /** pass normalized model input to the Denoising mode **/
+            /** pass normalized model input to the model **/
 
             // copy input array to tflite input
             memcpy(input,normalized_model_input,tflite_input_size); //memcpy doesnt work coz of float and double type misatch, use loop to copy elements
@@ -211,7 +202,7 @@ int main(){
             // copy tflite output to output array
             memcpy(normalized_model_output,output,tflite_output_size); //memcpy doesnt work coz of float and double type misatch, use loop to copy elements
 
-            /** process the output of model (1D array of size 129) **/
+            /** process the output of model (1D array of size spectrum_size) **/
 
             append_to_model_output(model_output_mag,normalized_model_output,spectrum_size,model_output_size);
 
@@ -260,7 +251,7 @@ int main(){
 
     fclose(outfile);
 
-    /*********************DENOISING END******************************/
+    /*********************MODEL EXECUTION END******************************/
 
 
 	return 0;
